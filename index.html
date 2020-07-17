@@ -1,123 +1,84 @@
-<!DOCTYPE html>
-<html lang="ja">
-<head>
-  <meta charset="utf-8">
-  <title>PureCloud WebChat Demo</title>
+<html>
+<head lang="ja">
+    <meta charset="UTF-8">
+    <title>Simple co-browse with voice example Demo</title>
 </head>
-
 <body>
-　<script src="https://apps.mypurecloud.jp/widgets/9.0/cxbus.min.js" onload="javascript:CXBus.configure({debug:false,pluginsPath:'https://apps.mypurecloud.jp/widgets/9.0/plugins/'}); CXBus.loadPlugin('widgets-core');"></script>
-  <script type="text/javascript">
-    window._genesys = {
-      widgets: {
-        main: {
-            theme: 'light',
-            lang: "ja",
-            // OR using the CDN URL
-            i18n: "https://apps.mypurecloud.com/widgets/9.0/i18n/widgets-ja.i18n.json"
-          },
-        webchat: {
-          transport: {
-            type: 'purecloud-v2-sockets',
-            dataURL: 'https://api.mypurecloud.jp',
-            deploymentKey : '0447c4ad-9e97-4964-b9cb-33cc8c803ab7',
-            orgGuid : 'f08a0fa3-c061-4634-9b86-9ed63fcf486f',
-            interactionData: {
-              routing: {
-                targetType: 'QUEUE',
-                targetAddress: 'G-mallチャット受付',
-                priority: 2
-              }
-            }
-          },
-          userData: {
-            addressStreet: '64472 Brown Street',
-            addressCity: 'Lindgrenmouth',
-            addressPostalCode: '50163-2735',
-            addressState: 'FL',
-            phoneNumber: '1-916-892-2045 x293',
-            phoneType: 'Cell',
-            customerId: '59606',
-            // These fields should be provided via advanced configuration
-            // firstName: 'Praenomen',
-            // lastName: 'Gens',
-            // email: 'praenomen.gens@calidumlitterae.com',
-            // subject: 'Chat subject'
-          }
+
+    <h1>Simple co-browse with voice example</h1>
+
+        <button type="button" id="start-cobrowse" onclick="genesysWebchat.startCobrowse()">Enter Co-browse Security Key</button>
+
+    <!-- Div with this id required to display security key form -->
+    <div id="cobrowse-security-form"></div>
+
+    <!-- Co-browse with voice uses the webchat API, so include it here -->
+    <script src="https://apps.mypurecloud.jp/webchat/jsapi-v1.js" type="text/javascript"></script>
+
+    <!-- For co-browse with voice, you must load the co-browse API. Co-browse with web chat loads the co-browse API for you. -->
+    <script src="https://cobrowse.mypurecloud.jp/cobrowse-jsapi-v1.js?deploymentKey=YOUR_DEPLOYMENT_KEY_HERE" type="text/javascript"></script>
+
+    <script type="text/javascript">
+    let genesysWebchat = (function() {
+        function createCobrowseConfig(){
+
+            return {
+                // Web chat application URL. Use the correct top-level domain for your Genesys Cloud region, i.e. apps.mypurecloud.ie, apps.mypurecloud.jp, apps.mypurecloud.co.uk.
+                "webchatAppUrl": "https://apps.mypurecloud.jp/webchat",
+
+                // Web chat service URL
+                "webchatServiceUrl": "https://realtime.mypurecloud.jp:443",
+
+                // Numeric organization ID
+                "orgId": 68,
+
+                // OrgGuid. Needed for co-browse with voice.
+                "orgGuid": "f08a0fa3-c061-4634-9b86-9ed63fcf486f",
+
+                // Organization name
+                "orgName": "ncnljapan",
+
+                // Log level
+                "logLevel": "DEBUG",
+
+                // Locale code
+                "locale": "ja",
+
+                // CSS class applied to the security key window, but not its contents
+                "cssClass": "webchat-frame",
+
+                // Custom style applied to the security key window, but not its contents
+                "css": {
+                    "width": "100%",
+                    "height": "100%"
+                },
+
+                // Optional CSS for styling security key form
+                "contentCssUrl": "http://example.com/style.css",
+
+                // Element id where the security key form will appear.
+                "containerEl": "cobrowse-security-form",
+
+                // Set to true to display security key form. Do not include for co-browse with web chat or for PureConnect co-browse with voice.
+                "promptForSecurityKey": true
+            };
         }
-      }
-    };
+        return {
+            startCobrowse: function() {
+                let config = createCobrowseConfig();
 
-    const customPlugin = CXBus.registerPlugin('Custom');
+                // Can also use callback
+                ININ.cobrowse.create(config)
+                    .then(function(result) {
+                        // Handle success
+                    })
+                    .catch(function(err) {
+                        // Handle failure
+                    });
+            }
+        }
+    })();
+    </script>
 
-    customPlugin.subscribe('WebChatService.started', function (e) {
-      console.log('Chat started', e);
-    });
-
-    customPlugin.subscribe('WebChatService.ended', function (e) {
-      console.log('Chat ended', e);
-    });
-  </script>
-  <button type="button" id="chat-button-simple" onclick="customPlugin.command('WebChat.open');">Start Chat (simple)</button>
-  
-  <script type="text/javascript">
-		function getAdvancedConfig() {
-			return {
-				form: {
-					autoSubmit: false,
-					//firstname: 'Praenomen',
-					lastname: 'Gens',
-					email: 'praenomen.gens@calidumlitterae.com',
-					//subject: 'Populated from data'
-				},
-				formJSON: {
-					wrapper: '<table></table>',
-					inputs: [
-						// Default fields
-						//{
-						//	id: 'cx_webchat_form_firstname',
-						//	name: 'firstname',
-						//	maxlength: '100',
-						//	placeholder: 'Required',
-						//	label: 'First Name'
-						//},
-						{
-							id: 'cx_webchat_form_lastname',
-							name: 'lastname',
-							maxlength: '100',
-							placeholder: 'Required',
-							//label: 'Last Name'
-							label: 'お名前'
-						},
-						{
-							id: 'cx_webchat_form_email',
-							name: 'email', 
-							maxlength: '100',
-							placeholder: 'Optional',
-							//label: 'Email'
-							label: 'メール'
-						},
-						//{
-						//	id: 'cx_webchat_form_subject', 
-						//	name: 'subject', 
-						//	maxlength: '100',
-						//	placeholder: 'Optional',
-						//	label: 'Subject'
-						//},
-						// Custom Fields
-						{
-							id: 'custom_field_1', 
-							name: 'customField1', 
-							maxlength: '100',
-							placeholder: 'Custom Data',
-							label: 'Custom Field 1',
-							value: 'My Custom Value'
-						}
-					]
-				}
-			};
-		}
-	</script>
-	<button type="button" id="chat-button" onclick="customPlugin.command('WebChat.open', getAdvancedConfig());">Start Chat (with data)</button>
 </body>
 </html>
